@@ -74,7 +74,7 @@ class ReflexAgent(Agent):
         newPos = successorGameState.getPacmanPosition()  # pacman position in the maze
         print("newPos: ", newPos)
 
-        newFood = successorGameState.getFood() # food position in the Pacman maze
+        newFood = successorGameState.getFood() # food position in the Pacman maze (prints out a list of boolean: T and F)
         print("newFood: ", newFood)
 
         newGhostStates = successorGameState.getGhostStates()  # position of the ghost
@@ -84,6 +84,17 @@ class ReflexAgent(Agent):
         print("newScaredTimes: ", newScaredTimes)
 
         "*** YOUR CODE HERE ***"
+
+        foodList = newFood.asList() # makes a list of all food coordinates in the maze (TF)
+        score = successorGameState.getScore() #prioritize score
+        # priortize closest food location
+        for food in foodList:
+            foodDist = util.manhattanDistance(food, newPos)
+            # if the foodlist is not empty then score = score + (1.0/ by the distance of the next food)
+            if (foodList) != 0:
+                score = score + (1.0/foodDist)
+
+        #return the score
         return successorGameState.getScore()
 
 
