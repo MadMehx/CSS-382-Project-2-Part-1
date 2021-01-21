@@ -71,23 +71,21 @@ class ReflexAgent(Agent):
         successorGameState = currentGameState.generatePacmanSuccessor(action)  # current game state
         print("successorGameState: ", successorGameState)
 
-        newPos = successorGameState.getPacmanPosition()  #pacman position
+        newPos = successorGameState.getPacmanPosition()  # pacman position in the maze
         print("newPos: ", newPos)
 
-        newFood = successorGameState.getFood() #
+        newFood = successorGameState.getFood() # food position in the Pacman maze
         print("newFood: ", newFood)
 
         newGhostStates = successorGameState.getGhostStates()  # position of the ghost
         print("newGhostStates: ", newGhostStates)
 
-        newScaredTimes = [ghostState.scaredTimer for ghostState in newGhostStates]
+        newScaredTimes = [ghostState.scaredTimer for ghostState in newGhostStates] # time that Ghost is scared when Pacman gets food
         print("newScaredTimes: ", newScaredTimes)
 
         "*** YOUR CODE HERE ***"
         return successorGameState.getScore()
 
-        "*** YOUR CODE HERE ***"
-        return successorGameState.getScore()
 
 def scoreEvaluationFunction(currentGameState):
     """
