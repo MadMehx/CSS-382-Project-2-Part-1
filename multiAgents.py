@@ -69,19 +69,19 @@ class ReflexAgent(Agent):
         # Useful information you can extract from a GameState (pacman.py)
 
         successorGameState = currentGameState.generatePacmanSuccessor(action)  # current game state
-        print("successorGameState: ", successorGameState)
+        #print("successorGameState: ", successorGameState)
 
         newPos = successorGameState.getPacmanPosition()  # pacman position in the maze
-        print("newPos: ", newPos)
+        #print("newPos: ", newPos)
 
         newFood = successorGameState.getFood() # food position in the Pacman maze (prints out a list of boolean: T and F)
-        print("newFood: ", newFood)
+        #print("newFood: ", newFood)
 
         newGhostStates = successorGameState.getGhostStates()  # position of the ghost
-        print("newGhostStates: ", newGhostStates)
+        #print("newGhostStates: ", newGhostStates)
 
         newScaredTimes = [ghostState.scaredTimer for ghostState in newGhostStates] # time that Ghost is scared when Pacman gets food
-        print("newScaredTimes: ", newScaredTimes)
+        #print("newScaredTimes: ", newScaredTimes)
 
         "*** YOUR CODE HERE ***"
 
@@ -90,12 +90,10 @@ class ReflexAgent(Agent):
         # priortize closest food location
         for food in foodList:
             foodDist = util.manhattanDistance(food, newPos)
-            # if the foodlist is not empty then score = score + (1.0/ by the distance of the next food)
-            if (foodList) != 0:
-                score = score + (1.0/foodDist)
+            score = score + (1.0/foodDist)
 
-        #return the score
-        return successorGameState.getScore()
+        #return the score (prioritze food and avoid ghost)
+        return score
 
 
 def scoreEvaluationFunction(currentGameState):
