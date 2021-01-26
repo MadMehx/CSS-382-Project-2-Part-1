@@ -173,7 +173,50 @@ class MinimaxAgent(MultiAgentSearchAgent):
         Returns whether or not the game state is a losing state
         """
         "*** YOUR CODE HERE ***"
-        util.raiseNotDefined()
+        def recursiveLOL(thing, depth, gameState):
+            # if the game has finished return the value of the state
+            if gameState.isLose() or gameState.isWin(): #or depth == max_depth:
+                return self.evaluationFunction(gameState)
+
+            # if it's the maximizer's turn (the player is the agent 0)
+            if thing == 0:
+                # maximize player's reward and pass the next turn to the first ghost (agent 1)
+                return max(recursiveLOL(1, depth, gameState.generateSuccessor(thing, action)) for action in
+                           gameState.getLegalActions(0))
+
+            # if it's the minimizer's turn (the ghosts are the agent 1 to num_agents)
+            else:
+                nextAgent = thing + 1  # get the index of the next agent
+                if gameState.getNumAgents() == nextAgent:  # if all agents have moved, then the next agent is the player
+                    nextAgent = 0
+                if nextAgent == 0:  # increase depth every time all agents have moved
+                    depth += 1
+                # minimize ghost's reward and pass the next ghost or the player if all ghosts have already moved
+                return min(recursiveLOL(nextAgent, depth, gameState.generateSuccessor(thing, action)) for action in
+                           gameState.getLegalActions(thing))
+
+
+        #gets the total number of ghosts in play
+        ghosts = gameState.getNumAgents() - 1
+
+        #pacman likes to know where to go, puts all possible moves by pacman into a pacboiMoves list
+        pacboiMoves = list(gameState.getLegalActions(0))
+
+        #1 step for every legal move by pacman
+        for legal in pacboiMoves:
+            each = 1
+            while each <= ghosts:
+                gameState.generateSuccessor(each, legal)
+                gameState.isWin()
+                gameState.isLose()
+                recursiveLOL(ghosts, self.depth, gameState.generateSuccessor(0, legal))
+                each += 1
+
+
+
+
+
+        #util.raiseNotDefined()
 
 class AlphaBetaAgent(MultiAgentSearchAgent):
     """
