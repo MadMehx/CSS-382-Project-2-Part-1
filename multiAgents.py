@@ -85,20 +85,31 @@ class ReflexAgent(Agent):
 
         "*** YOUR CODE HERE ***"
 
-        foodList = newFood.asList() # makes a list of all food coordinates in the maze
-        score = successorGameState.getScore() # prioritize score for Pacman
+        foodList = newFood.asList()  # makes a list of all food coordinates in the maze
+        score = successorGameState.getScore()  # prioritize score for Pacman
 
         # prioritize closest food location; use a (for loop) for food locations
         for food in foodList:
             # manhattan Distance to nearest food based on current position
-            foodDist = util.manhattanDistance(food, newPos)
+            foodDistance = util.manhattanDistance(food, newPos)
             # update score based on nearest food (Note: use reciprocals for important values)
             # reciprocals should be used for mapping of the maze and normalize values for the maze between 0 and 1,
             # in comparison to 1 and a large number (1,000,000) because you would need to also account for the locations
             # of the ghost.
-            score = score + (1.0/foodDist)
+            if (foodDistance != 0):
+                score = score + (1.0/foodDistance)
 
         # Need to add logic for ghost locations for a good reflex agent
+
+        # Use negative numbers
+        # Loop to find ghost locations
+        for ghost in newGhostStates:
+            # current position of ghost
+            ghostLocation = ghost.getPosition()
+            #distance to nearest ghost
+            ghostDistance = util.manhattanDistance(ghostLocation, newPos)
+            if (ghostDistance < -1):
+                score = score + (1.0/ghostDistance)
 
         # return the score (prioritize food)
         return score
