@@ -102,12 +102,14 @@ class ReflexAgent(Agent):
         # Need to add logic for ghost locations for a good reflex agent
 
         # Use negative numbers
+
         # Loop to find ghost locations
         for ghost in newGhostStates:
             # current position of ghost
             ghostLocation = ghost.getPosition()
             #distance to nearest ghost
             ghostDistance = util.manhattanDistance(ghostLocation, newPos)
+            # if ghost distance is -1 then update score
             if (ghostDistance < -1):
                 score = score + (1.0/ghostDistance)
 
