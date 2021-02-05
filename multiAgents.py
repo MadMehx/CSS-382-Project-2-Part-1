@@ -84,7 +84,6 @@ class ReflexAgent(Agent):
         #print("newScaredTimes: ", newScaredTimes)
 
         "*** YOUR CODE HERE ***"
-
         foodList = newFood.asList()  # makes a list of all food coordinates in the maze
         score = successorGameState.getScore()  # prioritize score for Pacman
 
@@ -213,34 +212,33 @@ class AlphaBetaAgent(MultiAgentSearchAgent):
         """
         "*** YOUR CODE HERE ***"
 
-        def maxvalue(agentIndex, alpha, beta, depth, gameState):
+        def minimax(agentIndex, depth, gameState, alpha, beta):
             if depth == self.depth or gameState.isLose() or gameState.isWin():
                 return self.evaluationFunction(gameState)
+            nextAgent = agentIndex + 1;
 
-            maximum = float("-inf")
+            # set to agent-0, pacman, if necessary and increase depth
+            if gameState.getNumAgents() == nextAgent:
+                nextAgent = 0;
+                depth += 1
             actions = gameState.getLegalActions(agentIndex)
-            for action in actions:
-                maximum = max(maximum, maxvalue(agentIndex, alpha, beta, gameState.generateSuccessor(agentIndex, action)))
-                if maximum > beta:
-                    return maximum
-                alpha = max(alpha, maximum)
-            return maximum
+            if agentIndex == 0:
+                return max(minimax(nextAgent, depth, gameState.generateSuccessor(agentIndex, nextAction))
+                           for nextAction in actions)
+            else:
+                return min(minimax(nextAgent, depth, gameState.generateSuccessor(agentIndex, nextAction))
+                           for nextAction in actions)
 
-        def minvalue(agentIndex, alpha, beta, depth, gameState):
-            if depth == self.depth or gameState.isLose() or gameState.isWin():
-                return self.evaluationFunction(gameState)
-
-            mininum = float("inf")
-            actions = gameState.getLegalActions(agentIndex)
-            for action in actions:
-                maximum = max(maximum,
-                              maxvalue(agentIndex, alpha, beta, gameState.generateSuccessor(agentIndex, action)))
-                if maximum > beta:
-                    return maximum
-                alpha = max(alpha, maximum)
-            return maximum
-            minimum = float("inf")
-            actions = gameState.getLegalActions(agentIndex)
+        bestAction = Directions.WEST
+        maximum = float("-inf")
+        alpha = float("inf")
+        beta = float("-inf")
+        for action in gameState.getLegalActions(0):
+            value = minimax(1, 0, gameState.generateSuccessor(0, action))
+            if value > maximum:
+                maximum = value
+                bestAction = action
+        return bestAction
 
         util.raiseNotDefined()
 
@@ -257,6 +255,33 @@ class ExpectimaxAgent(MultiAgentSearchAgent):
         legal moves.
         """
         "*** YOUR CODE HERE ***"
+        def minimax (agentIndex, depth, gameState):
+            if depth == self.depth or gameState.isLose() or gameState.isWin():
+                return self.evaluationFunction(gameState)
+            nextAgent = agentIndex + 1;
+
+            #set to agent-0, pacman, if necessary and increase depth
+            if gameState.getNumAgents() == nextAgent:
+                nextAgent = 0;
+                depth += 1
+            actions = gameState.getLegalActions(agentIndex)
+            if agentIndex == 0:
+                return max(minimax(nextAgent, depth, gameState.generateSuccessor(agentIndex, nextAction))
+                           for nextAction in actions)
+            else:
+                return sum(minimax(nextAgent, depth, gameState.generateSuccessor(agentIndex, nextAction))
+                           for nextAction in actions)
+
+        bestAction = Directions.WEST
+        maximum = float("-inf")
+        for action in gameState.getLegalActions(0):
+            value = minimax(1, 0, gameState.generateSuccessor(0, action))
+            if value > maximum:
+                maximum = value
+                bestAction = action
+
+        return bestAction
+
         util.raiseNotDefined()
 
 def betterEvaluationFunction(currentGameState):
@@ -267,6 +292,51 @@ def betterEvaluationFunction(currentGameState):
     DESCRIPTION: <write something here so we know what you did>
     """
     "*** YOUR CODE HERE ***"
+
+    newPos = currentGameState.getPacmanPosition()  # pacman position in the maze
+    # print("newPos: ", newPos)
+
+    newFood = currentGameState.getFood()  # food position in the Pacman maze (prints out a list of boolean: T and F)
+    # print("newFood: ", newFood)
+
+    newGhostStates = currentGameState.getGhostStates()  # position of the ghost
+    # print("newGhostStates: ", newGhostStates)
+
+    newScaredTimes = [ghostState.scaredTimer for ghostState in newGhostStates]  # time that Ghost is scared when Pacman gets food
+    # print("newScaredTimes: ", newScaredTimes)
+
+    foodList = newFood.asList()  # makes a list of all food coordinates in the maze
+
+    # prioritize closest food location; use a (for loop) for food locations
+    foodList = newFood.asList()  # makes a list of all food coordinates in the maze
+    score = currentGameState.getScore()  # prioritize score for Pacman
+
+    # prioritize closest food location; use a (for loop) for food locations
+    for food in foodList:
+        # manhattan Distance to nearest food based on current position
+        foodDistance = util.manhattanDistance(food, newPos)
+        # update score based on nearest food (Note: use reciprocals for important values)
+        # reciprocals should be used for mapping of the maze and normalize values for the maze between 0 and 1,
+        # in comparison to 1 and a large number (1,000,000) because you would need to also account for the locations
+        # of the ghost.
+        if (foodDistance != 0):
+            score = score + (1.0 / foodDistance)
+
+    # Need to add logic for ghost locations for a good reflex agent
+
+    # Use negative numbers
+
+    # Loop to find ghost locations
+    for ghost in currentGameState.getGhostPositions():
+        # distance to nearest ghost
+        ghostDistance = util.manhattanDistance(newPos, ghost)
+        # if ghost distance is -1 then update score
+        if (ghostDistance < -1):
+            score = score - (1.0 / ghostDistance)
+
+    # return the score (prioritize food)
+    return score
+
     util.raiseNotDefined()
 
 # Abbreviation
