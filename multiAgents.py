@@ -282,17 +282,20 @@ class ExpectimaxAgent(MultiAgentSearchAgent):
                 return self.evaluationFunction(gameState)
             nextAgent = agentIndex + 1;
 
-            #set to agent-0, pacman, if necessary and increase depth
+            # set to agent-0, pacman, if necessary and increase depth
             if gameState.getNumAgents() == nextAgent:
                 nextAgent = 0;
                 depth += 1
             actions = gameState.getLegalActions(agentIndex)
+            # maximizer node
             if agentIndex == 0:
                 return max(minimax(nextAgent, depth, gameState.generateSuccessor(agentIndex, nextAction))
                            for nextAction in actions)
             else:
+            # return the sum, instead of min, of the leaf nodes for expectimax algorithm
                 return sum(minimax(nextAgent, depth, gameState.generateSuccessor(agentIndex, nextAction))
                            for nextAction in actions)
+
 
         bestAction = Directions.WEST
         maximum = float("-inf")
@@ -340,7 +343,12 @@ def betterEvaluationFunction(currentGameState):
         if (foodDistance != 0):
             score = score + (1.0 / foodDistance)
 
+    # Need to add logic for ghost locations for a good reflex agent
+
+    # Use negative numbers
+
     # Loop to find ghost locations
+    ghostDistance = 0
     for ghost in newGhostStates:
         # current position of ghost
         ghostLocation = ghost.getPosition()
@@ -348,7 +356,18 @@ def betterEvaluationFunction(currentGameState):
         ghostDistance = util.manhattanDistance(ghostLocation, newPos)
         # if ghost distance is -1 then update score
         if (ghostDistance < -1):
-            score = score - (1.0 / ghostDistance)
+            score = score + (1.0 / ghostDistance)
+
+    capsules = currentGameState.getCapsules()
+    if capsules != 0:
+        score = score * 10000
+
+    newScaredTimes = [ghostState.scaredTimer for ghostState in currentGameState.getGhostStates()]
+    eatGhostReward = 0
+    closestGhost = min([manhattanDistance(newPos, x.getPosition()) for x in newGhostStates])
+    if min(newScaredTimes) > 0:
+        eatGhostReward = 1 / float(closestGhost)
+        score = score * eatGhostReward * 10
 
     # return the score (prioritize food)
     return score
