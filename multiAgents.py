@@ -98,10 +98,6 @@ class ReflexAgent(Agent):
             if (foodDistance != 0):
                 score = score + (1.0/foodDistance)
 
-        # Need to add logic for ghost locations for a good reflex agent
-
-        # Use negative numbers
-
         # Loop to find ghost locations
         for ghost in newGhostStates:
             # current position of ghost
@@ -185,20 +181,28 @@ class MinimaxAgent(MultiAgentSearchAgent):
                 nextAgent = 0
                 depth += 1
             actions = gameState.getLegalActions(agentIndex)
+
+            # Pacman; maximizer
             if agentIndex == 0:
                 return max(minimax(nextAgent, depth, gameState.generateSuccessor(agentIndex, nextAction))
                            for nextAction in actions)
+            # Ghost; minimizer
             else:
                 return min(minimax(nextAgent, depth, gameState.generateSuccessor(agentIndex, nextAction))
                            for nextAction in actions)
 
+        # initializing values
         bestAction = Directions.WEST
         maximum = float("-inf")
+
+        # Calculating the best action
         for action in gameState.getLegalActions(0):
             value = minimax(1, 0, gameState.generateSuccessor(0, action))
             if value > maximum:
                 maximum = value
                 bestAction = action
+
+        # Return the best action the Pacman should take
         return bestAction
 
 class AlphaBetaAgent(MultiAgentSearchAgent):
@@ -212,7 +216,7 @@ class AlphaBetaAgent(MultiAgentSearchAgent):
         """
         "*** YOUR CODE HERE ***"
 
-        def minimax(agentIndex, depth, gameState, alpha, beta):
+        def alphaBetaPrune(agentIndex, depth, gameState, alpha, beta):
             if depth == self.depth or gameState.isLose() or gameState.isWin():
                 return self.evaluationFunction(gameState)
 
@@ -225,44 +229,49 @@ class AlphaBetaAgent(MultiAgentSearchAgent):
 
             actions = gameState.getLegalActions(agentIndex)
 
-            # Pacman
+            # Pacman; Maximizer
             if agentIndex == 0:
                 maximum = float("-inf")
                 for nextAction in actions:
-                    maximum = max(maximum, minimax(nextAgent, depth, gameState.generateSuccessor(agentIndex, nextAction), alpha, beta))
+                    maximum = max(maximum, alphaBetaPrune(nextAgent, depth, gameState.generateSuccessor(agentIndex, nextAction), alpha, beta))
 
+            # Finding and returning the largest value
                     if maximum > beta:
                         return maximum
                     alpha = max(alpha, maximum)
                 return maximum
+            # Ghosts; Minimizer
             else:
-            # Ghosts
                 minimum = float("inf")
                 for nextAction in actions:
-                    minimum = min(minimum, minimax(nextAgent, depth, gameState.generateSuccessor(agentIndex, nextAction), alpha, beta))
+                    minimum = min(minimum, alphaBetaPrune(nextAgent, depth, gameState.generateSuccessor(agentIndex, nextAction), alpha, beta))
 
+            # Finding and returning the lowest value
                     if minimum < alpha:
                         return minimum
                     beta = min(beta, minimum)
                 return minimum
 
+        # initializing values
         bestAction = Directions.WEST
-
         maximum = float("-inf")
         alpha = float("-inf")
         beta = float("inf")
 
+        # Calculating the best action
         for action in gameState.getLegalActions(0):
-            value = minimax(1, 0, gameState.generateSuccessor(0, action), alpha, beta)
+            value = alphaBetaPrune(1, 0, gameState.generateSuccessor(0, action), alpha, beta)
             if value > maximum:
                 maximum = value
                 bestAction = action
 
+        # Pruning leaf nodes
             if maximum > beta:
                 return maximum
             alpha = max(alpha, maximum)
-        return bestAction
 
+        # Return the best action the Pacman should take
+        return bestAction
 
 class ExpectimaxAgent(MultiAgentSearchAgent):
     """
@@ -277,7 +286,7 @@ class ExpectimaxAgent(MultiAgentSearchAgent):
         legal moves.
         """
         "*** YOUR CODE HERE ***"
-        def minimax (agentIndex, depth, gameState):
+        def expectimax(agentIndex, depth, gameState):
             if depth == self.depth or gameState.isLose() or gameState.isWin():
                 return self.evaluationFunction(gameState)
             nextAgent = agentIndex + 1;
@@ -286,25 +295,32 @@ class ExpectimaxAgent(MultiAgentSearchAgent):
             if gameState.getNumAgents() == nextAgent:
                 nextAgent = 0;
                 depth += 1
+
             actions = gameState.getLegalActions(agentIndex)
-            # maximizer node
+
+            # Pacman; maximizer
             if agentIndex == 0:
-                return max(minimax(nextAgent, depth, gameState.generateSuccessor(agentIndex, nextAction))
+                return max(expectimax(nextAgent, depth, gameState.generateSuccessor(agentIndex, nextAction))
                            for nextAction in actions)
+            # Ghosts; instead of min find the average of the leaf nodes
             else:
-            # return the sum, instead of min, of the leaf nodes for expectimax algorithm
-                return sum(minimax(nextAgent, depth, gameState.generateSuccessor(agentIndex, nextAction))
-                           for nextAction in actions)
+            # return the average, instead of min, of the leaf nodes for expectimax algorithm
+            # get the sum of the leaf nodes and then divide it by the number of leaf nodes giving you the average
+                return sum(expectimax(nextAgent, depth, gameState.generateSuccessor(agentIndex, newState))
+                           for newState in actions) / len(actions)
 
-
+        # initializing values
         bestAction = Directions.WEST
         maximum = float("-inf")
+
+        # Calculating the best action
         for action in gameState.getLegalActions(0):
-            value = minimax(1, 0, gameState.generateSuccessor(0, action))
+            value = expectimax(1, 0, gameState.generateSuccessor(0, action))
             if value > maximum:
                 maximum = value
                 bestAction = action
 
+        # Return the best action the Pacman should take
         return bestAction
 
 def betterEvaluationFunction(currentGameState):
@@ -312,7 +328,11 @@ def betterEvaluationFunction(currentGameState):
     Your extreme ghost-hunting, pellet-nabbing, food-gobbling, unstoppable
     evaluation function (question 5).
 
-    DESCRIPTION: <write something here so we know what you did>
+    DESCRIPTION: Building on top of the evaluation method made in the reflex agent problem. In order to get a score
+    above 1000, you need to implement a solution in which Pacman will go for capsules and scared ghosts. By manipulating
+    the point values that Pacman can get by using different actions, Pacman will try and maxmimize the amount of points
+    he can get. So by adding more points towards power capsules and scared ghosts, Pacman will try and go for those
+    capsules and scared ghost if the score is high enough for him to take that those actions.
     """
     "*** YOUR CODE HERE ***"
 
@@ -343,11 +363,7 @@ def betterEvaluationFunction(currentGameState):
         if (foodDistance != 0):
             score = score + (1.0 / foodDistance)
 
-    # Need to add logic for ghost locations for a good reflex agent
-
-    # Use negative numbers
-
-    # Loop to find ghost locations
+    # Loop to find ghost locations and stay away from them
     ghostDistance = 0
     for ghost in newGhostStates:
         # current position of ghost
@@ -356,20 +372,24 @@ def betterEvaluationFunction(currentGameState):
         ghostDistance = util.manhattanDistance(ghostLocation, newPos)
         # if ghost distance is -1 then update score
         if (ghostDistance < -1):
-            score = score + (1.0 / ghostDistance)
+            score = score - (1.0 / ghostDistance)
 
+    # Give Pacman an incentive to go for power capsules
     capsules = currentGameState.getCapsules()
     if capsules != 0:
         score = score * 10000
 
+    # After Pacman gets a power capsule, he should go towards the scared ghost
     newScaredTimes = [ghostState.scaredTimer for ghostState in currentGameState.getGhostStates()]
     eatGhostReward = 0
+    # Find the location of the closest ghost
     closestGhost = min([manhattanDistance(newPos, x.getPosition()) for x in newGhostStates])
+    # if any ghost is scared then Pacman will go for it.
     if min(newScaredTimes) > 0:
         eatGhostReward = 1 / float(closestGhost)
         score = score * eatGhostReward * 10
 
-    # return the score (prioritize food)
+    # return the score
     return score
 
     util.raiseNotDefined()
